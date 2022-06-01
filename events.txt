@@ -1,0 +1,19 @@
+E Tue 1,4 15:00 ; IB Thermo ABC
+E Tue 2,5 15:00 ; IB Thermo DEF
+
+M Wed 1 ; 4YP hazard form
+M Fri 5 ; 4YP progress form
+M Thu 7 ; 4YP presentations
+M Wed 8 ; 4YP presentation feedback
+M Fri 9 ; 4YP progress form
+
+L Thu 1 ; 4YP TMR hand in
+L Thu 5 ; 4YP TMR mark form
+L Fri 5 ; 4YP progress form
+L Fri 9 ; 4YP progress form
+
+E Mon -2; 4YP proposals
+E Fri 3 ; 4YP preallocation
+E Wed 5 ; 4YP report hand in
+E Thu 6 ; 4YP presentations start
+E Fri 7 ; 4YP planning form
