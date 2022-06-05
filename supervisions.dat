@@ -1,0 +1,12 @@
+M Thu odd 15:00 ; IB Thermo ABC
+M Thu even 15:00 ; IB Thermo DEF
+
+L Thu odd 15:00 ; IB Thermo ABC
+L Thu even 15:00 ; IB Thermo DEF
+L Wed 3,5,7 15:00 ; IB Maths ABC
+L Wed 4,6,8 15:00 ; IB Maths DEF
+
+E Thu 3 15:00 ; IB Thermo ABC
+E Thu 4 15:00 ; IB Thermo DEF
+E Tue 1,4 15:00 ; IB Maths ABC
+E Tue 2,5 15:00 ; IB Maths DEF
