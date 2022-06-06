@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stuff"""
 
-# Default year heuristic: 
+# Default year heuristic:
 #   after the end of Easter term: next academic year
 #   until the end of Easter term: current academic year
 
@@ -16,8 +16,10 @@ class Terms(Enum):
     L = 1
     E = 2
 
+
 class Weekdays(Enum):
     """Index days of the week from Monday"""
+
     Mon = 0
     Tue = 1
     Wed = 2
@@ -25,6 +27,7 @@ class Weekdays(Enum):
     Fri = 4
     Sat = 5
     Sun = 6
+
 
 WEEK_DURATION = timedelta(weeks=1)
 DAY_DURATION = timedelta(days=1)
@@ -61,34 +64,38 @@ TERM_MONTHS = [10, 1, 4]
 
 def full_term_start(year, term):
     """The ."""
-    year_adjusted = year+1 if term else year  # Michaelmas == 0 is Falsey
+    year_adjusted = year + 1 if term else year  # Michaelmas == 0 is Falsey
     return date(year_adjusted, TERM_MONTHS[term], FULL_TERM_DATES[year][term])
+
 
 def get_date(year, term, week, day, hour=None, minute=None):
     # If days are indexed so that Mon=0, reindex so that week starts on Thu
-    day_adjusted = (day+4) % 7
+    day_adjusted = (day + 4) % 7
     # Lectures begin two days after Full term start
-    lectures_start = full_term_start(year, term) + 2*DAY_DURATION
+    lectures_start = full_term_start(year, term) + 2 * DAY_DURATION
     # Add on a number of weeks
-    week_start = lectures_start + (week-1)*WEEK_DURATION
+    week_start = lectures_start + (week - 1) * WEEK_DURATION
     # Finally add on the day within the week
-    day = week_start + day_adjusted*DAY_DURATION
+    day = week_start + day_adjusted * DAY_DURATION
     # Update the time if needed
     if hour is None:
         return day
     elif minute is None:
         return datetime.combine(day, time(hour))
     else:
-        return datetime.combine(day, time(hour,minute))
+        return datetime.combine(day, time(hour, minute))
+
 
 def get_dates(year, term, weeks, day, hour=None, minute=None):
     return [get_date(year, term, wi, day, hour, minute) for wi in weeks]
 
+
 def parse_line(l):
-    datetime_raw, description_raw = l.split(';')
+    datetime_raw, description_raw = l.split(";")
     date_spec = parse_datetime(datetime_raw)
     description = description_raw.strip()
     return description, date_spec
+
 
 def parse_datetime(d):
     """Given a datetime string in my format, extract numbers.
@@ -115,14 +122,15 @@ def parse_datetime(d):
         )
     else:
         term_raw, day_raw, week_raw, time_raw = ds
-        hour, minute = [int(si) for si in time_raw.split(':')]
+        hour, minute = [int(si) for si in time_raw.split(":")]
         return (
             Terms[term_raw].value,
             parse_week_numbers(week_raw),
             Weekdays[day_raw].value,
             hour,
-            minute
+            minute,
         )
+
 
 def parse_week_numbers(s):
     """Given a string, return tuple of week numbers.
@@ -138,16 +146,16 @@ def parse_week_numbers(s):
 
     """
 
-    if s.strip().lower() == 'odd':
-        week_numbers = [i for i in range(1,9,2)]
-    elif s.strip().lower() == 'even':
-        week_numbers = [i for i in range(2,10,2)]
+    if s.strip().lower() == "odd":
+        week_numbers = [i for i in range(1, 9, 2)]
+    elif s.strip().lower() == "even":
+        week_numbers = [i for i in range(2, 10, 2)]
     else:
         week_numbers = []
-        for si in s.split(','):
-            if '-' in si[1:]:
-                lims = [int(sij) for sij in si.split('-')]
-                week_numbers += [i for i in range(lims[0],lims[1]+1)]
+        for si in s.split(","):
+            if "-" in si[1:]:
+                lims = [int(sij) for sij in si.split("-")]
+                week_numbers += [i for i in range(lims[0], lims[1] + 1)]
             else:
                 week_numbers.append(int(si))
 
@@ -156,8 +164,13 @@ def parse_week_numbers(s):
 
 def load_file(filename):
     """Open file by name, parse contents into descriptions and date specs."""
-    with open(filename,'r') as f:
-        return [parse_line(l) for l in f.read().splitlines() if l.strip() and not l.startswith('#')]
+    with open(filename, "r") as f:
+        return [
+            parse_line(l)
+            for l in f.read().splitlines()
+            if l.strip() and not l.startswith("#")
+        ]
+
 
 def default_year():
     """Choose a year based on current date.
@@ -174,39 +187,40 @@ def default_year():
     else:
         return now.year
 
+
 def save_ical(events, current_year, filename):
     cal = icalendar.Calendar()
-    cal.add('prodid','-//James Brind//uccalgen.py//EN')
-    cal.add('version', '2.0')
+    cal.add("prodid", "-//James Brind//uccalgen.py//EN")
+    cal.add("version", "2.0")
     now = datetime.now()
     for description, date_specs in events:
         dates = get_dates(current_year, *date_specs)
         for d in dates:
             e = icalendar.Event()
-            e.add('summary', description)
-            e.add('dtstamp', now)
+            e.add("summary", description)
+            e.add("dtstamp", now)
             if type(d) == date:
-                e.add('dtstart', d)
+                e.add("dtstart", d)
             else:
-                e.add('dtstart', d)
-                e.add('dtend', d + HOUR_DURATION)
+                e.add("dtstart", d)
+                e.add("dtend", d + HOUR_DURATION)
             cal.add_component(e)
-    with open(filename,'wb') as f:
+    with open(filename, "wb") as f:
         f.write(cal.to_ical())
 
-if __name__ == '__main__':
 
-    if len(sys.argv)==3:
+if __name__ == "__main__":
+
+    if len(sys.argv) == 3:
         infile, outfile = sys.argv[1:]
         current_year = default_year()
-        print(f'current_year={current_year}')
-    elif len(sys.argv)==4:
+        print(f"current_year={current_year}")
+    elif len(sys.argv) == 4:
         infile, outfile, current_year_raw = sys.argv[1:]
         current_year = int(current_year_raw)
     else:
-        print('Usage: uccalgen.py IN_DAT OUT_ICS [MICH_YEAR]')
+        print("Usage: uccalgen.py IN_DAT OUT_ICS [MICH_YEAR]")
         quit()
 
     events = load_file(infile)
-    save_ical(events,current_year,outfile)
-
+    save_ical(events, current_year, outfile)
