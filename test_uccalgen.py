@@ -49,3 +49,27 @@ def test_consecutive_days():
         for i in range(len(dates)-1):
             assert dates[i+1]-dates[i] == uccalgen.DAY_DURATION
 
+def test_term_ends():
+    """Check that end of Full Term is when we expect."""
+
+    full_term_ends = {
+        2017: [1, 16, 15],
+        2018: [30, 15, 14],
+        2019: [6, 13, 12],
+        2020: [4, 19, 18],
+        2021: [3, 18, 17],
+        2022: [2, 17, 16],
+        2023: [1, 15, 14],
+        2024: [6, 21, 20],
+        2025: [5, 20, 19],
+        2026: [4, 19, 18],
+        2027: [3, 17, 16],
+        2028: [1, 16, 15],
+        2029: [30, 15, 14],
+    }
+
+    for year, end_days in full_term_ends.items():
+        for term in range(3):
+            week_num = 9 if term<2 else 8
+            date_now = uccalgen.get_date(year, term, week_num, uccalgen.Weekdays.Fri.value)
+            assert date_now.day == end_days[term]
