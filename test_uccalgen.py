@@ -48,7 +48,7 @@ def test_consecutive_days():
     """Check that weekwise dates are consecutive."""
 
     day_names = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"]
-    days_ordered = [uccalgen.Weekdays[k].value for k in day_names]
+    days_ordered = [uccalgen.WEEKDAYS[k] for k in day_names]
 
     current_year = 2022
     for term in range(3):
@@ -83,7 +83,5 @@ def test_term_ends():
     for year, end_days in full_term_ends.items():
         for term in range(3):
             week_num = 9 if term < 2 else 8
-            date_now = uccalgen.get_date(
-                year, term, week_num, uccalgen.Weekdays.Fri.value
-            )
+            date_now = uccalgen.get_date(year, term, week_num, uccalgen.WEEKDAYS["Fri"])
             assert date_now.day == end_days[term]

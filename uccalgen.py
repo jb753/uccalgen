@@ -1,39 +1,14 @@
 #!/usr/bin/env python3
-"""Stuff"""
-
-# Default year heuristic:
-#   after the end of Easter term: next academic year
-#   until the end of Easter term: current academic year
-
+"""Generate ics files for events by University of Cambridge term weeks."""
 
 import sys, icalendar
 from datetime import date, datetime, timedelta, time
-from enum import Enum
 
+# Conversions from strings to indexes for term, day of week
+TERMS = {"M": 0, "L": 1, "E": 2}
+WEEKDAYS = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
 
-class Terms(Enum):
-    M = 0
-    L = 1
-    E = 2
-
-
-class Weekdays(Enum):
-    """Index days of the week from Monday"""
-
-    Mon = 0
-    Tue = 1
-    Wed = 2
-    Thu = 3
-    Fri = 4
-    Sat = 5
-    Sun = 6
-
-
-WEEK_DURATION = timedelta(weeks=1)
-DAY_DURATION = timedelta(days=1)
-HOUR_DURATION = timedelta(hours=1)
-
-# DEFINE FULL TERM DATES
+# FULL TERM DATES
 # From University of Cambridge Statutes and Ordinances 2018 edition
 # Chapter II Section 10 "Dates of Term and Full Term"
 # Full Michaelmas starts on Tues Jan, ends Fri early Dec or late Nov
@@ -61,14 +36,21 @@ FULL_TERM_DATES = {
 # Easter Term starts in Apr
 TERM_MONTHS = [10, 1, 4]
 
+# Time intervals
+WEEK_DURATION = timedelta(weeks=1)
+DAY_DURATION = timedelta(days=1)
+HOUR_DURATION = timedelta(hours=1)
+
 
 def full_term_start(year, term):
-    """The ."""
-    year_adjusted = year + 1 if term else year  # Michaelmas == 0 is Falsey
+    """The start date of `term` in academic year beginning `year`."""
+    # Adjust the year forward if Lent or Easter (Michaelmas == 0 is Falsey)
+    year_adjusted = year + 1 if term else year
     return date(year_adjusted, TERM_MONTHS[term], FULL_TERM_DATES[year][term])
 
 
 def get_date(year, term, week, day, hour=None, minute=None):
+    """Given all indexes for a Cambridge term date, return datetime."""
     # If days are indexed so that Mon=0, reindex so that week starts on Thu
     day_adjusted = (day + 4) % 7
     # Lectures begin two days after Full term start
@@ -87,10 +69,12 @@ def get_date(year, term, week, day, hour=None, minute=None):
 
 
 def get_dates(year, term, weeks, day, hour=None, minute=None):
+    """For recurring events on multiple weeks, get a list of datetimes."""
     return [get_date(year, term, wi, day, hour, minute) for wi in weeks]
 
 
 def parse_line(l):
+    """Given a complete input line, split description and date spec, parse."""
     datetime_raw, description_raw = l.split(";")
     date_spec = parse_datetime(datetime_raw)
     description = description_raw.strip()
@@ -99,8 +83,6 @@ def parse_line(l):
 
 def parse_datetime(d):
     """Given a datetime string in my format, extract numbers.
-
-    In general,
 
     'TERM_LETTER DAY_OF_WEEK WEEK_NUMS [HH:MM]' ->
         (term_index, week_index, day_index, [hours, minutes])
@@ -112,21 +94,22 @@ def parse_datetime(d):
     'M Wed 1' -> (0, (1,), 1)
 
     """
+
     ds = d.split()
     if len(ds) == 3:
         term_raw, day_raw, week_raw = ds
         return (
-            Terms[term_raw].value,
+            TERMS[term_raw],
             parse_week_numbers(week_raw),
-            Weekdays[day_raw].value,
+            WEEKDAYS[day_raw],
         )
     else:
         term_raw, day_raw, week_raw, time_raw = ds
         hour, minute = [int(si) for si in time_raw.split(":")]
         return (
-            Terms[term_raw].value,
+            TERMS[term_raw],
             parse_week_numbers(week_raw),
-            Weekdays[day_raw].value,
+            WEEKDAYS[day_raw],
             hour,
             minute,
         )
@@ -189,6 +172,7 @@ def default_year():
 
 
 def save_ical(events, current_year, filename):
+    """Write a list of tuples of Cambridge term indexes to an ics."""
     cal = icalendar.Calendar()
     cal.add("prodid", "-//James Brind//uccalgen.py//EN")
     cal.add("version", "2.0")
@@ -214,7 +198,6 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         infile, outfile = sys.argv[1:]
         current_year = default_year()
-        print(f"current_year={current_year}")
     elif len(sys.argv) == 4:
         infile, outfile, current_year_raw = sys.argv[1:]
         current_year = int(current_year_raw)
