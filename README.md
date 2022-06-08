@@ -5,11 +5,11 @@ of events specified in the University of Cambridge week notation.
 
 # Quickstart
 
-List events using the format,
+List events one per line using the format,
 ```
 $TERM $DAY_OF_WEEK $WEEK_NO [$HOURS:$MINUTES] ; $DESCRIPTION
 ```
-for example, if `calendar.dat` contains,
+For example, if `calendar.dat` contains,
 ```
 M Thu 1 ; Lectures start
 L Mon odd 15:00 ; Supervisions
