@@ -5,6 +5,7 @@ James Brind, June 2022"""
 
 import sys, icalendar
 from datetime import date, datetime, timedelta, time
+from hashlib import sha256
 
 # Mappings from strings to indexes for term, day of week
 TERMS = {"m": 0, "l": 1, "e": 2}
@@ -175,22 +176,35 @@ def default_year():
 
 def save_ical(events, current_year, filename):
     """Write a list of tuples of Cambridge term indexes to an ics."""
+
     cal = icalendar.Calendar()
     cal.add("prodid", "-//James Brind//uccalgen.py//EN")
     cal.add("version", "2.0")
     now = datetime.now()
+
     for description, date_specs in events:
+
         dates = get_dates(current_year, *date_specs)
+
         for d in dates:
+
             e = icalendar.Event()
             e.add("summary", description)
             e.add("dtstamp", now)
+
             if type(d) == date:
                 e.add("dtstart", d)
             else:
                 e.add("dtstart", d)
                 e.add("dtend", d + HOUR_DURATION)
+
+            # Make an event UID by hashing the description and date together
+            # This ensures that events are not duplicated if we import twice
+            hashstr = bytes(description + d.isoformat(), 'utf-8')
+            e.add("uid",sha256(hashstr).hexdigest())
+
             cal.add_component(e)
+
     with open(filename, "wb") as f:
         f.write(cal.to_ical())
 
