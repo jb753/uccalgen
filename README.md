@@ -1,18 +1,19 @@
 # uccalgen
 
-`uccalgen` is a Python script that automates generating an ics file for a set
-of events specified in the University of Cambridge week notation.
+`uccalgen` is a Python script that automates generating an ics calendar file
+for a set of events specified in the University of Cambridge week notation.
 
 # Quickstart
 
-List events one per line using the format,
+Make an input file with one event per line using the format,
 ```
-$TERM $DAY_OF_WEEK $WEEK_NO [$HOURS:$MINUTES] ; $DESCRIPTION
+$TERM $DAY_OF_WEEK $WEEK_NUM [$HOURS:$MINUTES] ; $DESCRIPTION
 ```
 For example, if `calendar.dat` contains,
 ```
 M Thu 1 ; Lectures start
 L Mon odd 15:00 ; Supervisions
+L Tue 2,4,6 15:00 ; Other supervisions
 E Fri 4-8 15:00 ; More supervisions
 ```
 then to generate an ics file for the academic year 2022/23,
@@ -45,7 +46,7 @@ need a description for what is happening on that date.
 
 Each event is listed on a separate line, with the format:
 ```
-$TERM $DAY_OF_WEEK $WEEK_NO [$HOURS:$MINUTES] ; $DESCRIPTION
+$TERM $DAY_OF_WEEK $WEEK_NUM [$HOURS:$MINUTES] ; $DESCRIPTION
 ```
 where a semicolon separates date/time specification from the description, and
 the other fields are space-separated (but consecutive spaces are ignored).

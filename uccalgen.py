@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""Generate ics files for events by University of Cambridge term weeks."""
+"""Generate ics files for events by University of Cambridge term weeks.
+
+James Brind, June 2022"""
 
 import sys, icalendar
 from datetime import date, datetime, timedelta, time
 
-# Conversions from strings to indexes for term, day of week
-TERMS = {"M": 0, "L": 1, "E": 2}
-WEEKDAYS = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
+# Mappings from strings to indexes for term, day of week
+TERMS = {"m": 0, "l": 1, "e": 2}
+WEEKDAYS = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
 
 # FULL TERM DATES
 # From University of Cambridge Statutes and Ordinances 2018 edition
 # Chapter II Section 10 "Dates of Term and Full Term"
-# Full Michaelmas starts on Tues Jan, ends Fri early Dec or late Nov
-# Full Lent starts Tues Jan, ends Fri Mar
-# Full Easter starts Tues Apr, ends Fri Jun
-# Myear Mst Men Lst Len Est Een
+# Full Michaelmas starts on Tues Oct
+# Full Lent starts Tues Jan
+# Full Easter starts Tues Apr
+# Keyed with the Michaelmas year
 FULL_TERM_DATES = {
     2017: [3, 16, 24],
     2018: [2, 15, 23],
@@ -99,17 +101,17 @@ def parse_datetime(d):
     if len(ds) == 3:
         term_raw, day_raw, week_raw = ds
         return (
-            TERMS[term_raw],
+            TERMS[term_raw.lower()],
             parse_week_numbers(week_raw),
-            WEEKDAYS[day_raw],
+            WEEKDAYS[day_raw.lower()],
         )
     else:
         term_raw, day_raw, week_raw, time_raw = ds
         hour, minute = [int(si) for si in time_raw.split(":")]
         return (
-            TERMS[term_raw],
+            TERMS[term_raw.lower()],
             parse_week_numbers(week_raw),
-            WEEKDAYS[day_raw],
+            WEEKDAYS[day_raw.lower()],
             hour,
             minute,
         )
@@ -195,6 +197,7 @@ def save_ical(events, current_year, filename):
 
 if __name__ == "__main__":
 
+    # Parse input arguments
     if len(sys.argv) == 3:
         infile, outfile = sys.argv[1:]
         current_year = default_year()
@@ -205,5 +208,6 @@ if __name__ == "__main__":
         print("Usage: uccalgen.py IN_DAT OUT_ICS [MICH_YEAR]")
         quit()
 
+    # Read events from the input file, process, write output file
     events = load_file(infile)
     save_ical(events, current_year, outfile)
